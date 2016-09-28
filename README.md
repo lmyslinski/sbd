@@ -1,0 +1,1 @@
+A python script to convert Safari Online books into PDF for offline storage of your queue
