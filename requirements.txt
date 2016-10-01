@@ -1,0 +1,4 @@
+beautifulsoup4==4.5.1
+lxml==3.6.4
+mechanize==0.2.5
+pdfkit==0.5.0
