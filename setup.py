@@ -11,7 +11,7 @@ setup(name='sbd',
       url='https://github.com/Humblehound',
       download_url='https://github.com/Humblehound/sbd/tarball/0.1',
       install_requires=[
-          'beautifulsoup4', 'lxml', 'mechanize', 'pdfkit'
+          'beautifulsoup4', 'lxml', 'mechanize', 'pdfkit', 'validators'
       ],
       entry_points={
           'console_scripts': [
