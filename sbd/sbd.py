@@ -23,12 +23,10 @@ def get_credentials(arguments):
 
 
 baseurl = 'https://www.safaribooksonline.com/'
-baseurl_unsafe = 'http://www.safaribooksonline.com/'
-login_url = "https://www.safaribooksonline.com/accounts/login"
 
 parser = argparse.ArgumentParser(
     description='A small program to download books from Safari Books Online for offline storage.')
-parser.add_argument('-e', '--email', help='Safari Books Online login')
+parser.add_argument('-u', '--login', help='Safari Books Online login')
 parser.add_argument('-p', '--password', help='Safari Books Online password')
 parser.add_argument('safari_book_url',
                     help='Safari book url, ex. https://www.safaribooksonline.com/library/view/software-build-systems/XXX/')
@@ -36,10 +34,6 @@ parser.add_argument('safari_book_url',
 args = parser.parse_args()
 url = args.safari_book_url
 email, password = get_credentials(args)
-
-if baseurl not in url and baseurl not in baseurl_unsafe not in url:
-    print "You must pass a valid safari books online url"
-    exit()
 
 cj = cookielib.CookieJar()
 br = mechanize.Browser()
