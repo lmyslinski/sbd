@@ -1,3 +1,13 @@
-/.idea/
+.idea
+*.pyc
 *.pdf
 
+# Build
+.cache
+.eggs
+dist
+sbd.egg-info
+
+# Tests
+.tox
+.python-version
