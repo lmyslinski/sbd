@@ -6,6 +6,7 @@ import mechanize
 import cookielib
 import argparse
 import os
+import validators
 
 
 def remove_non_ascii_chars(text):
@@ -13,8 +14,8 @@ def remove_non_ascii_chars(text):
 
 
 def get_credentials(arguments):
-    if arguments.email is not None and arguments.password is not None:
-        return arguments.email, arguments.password
+    if arguments.login is not None and arguments.password is not None:
+        return arguments.login, arguments.password
     elif os.environ.has_key("SBD_LOGIN") and os.environ.has_key("SBD_PASSWORD"):
         return os.environ["SBD_LOGIN"], os.environ["SBD_PASSWORD"]
     else:
@@ -29,55 +30,64 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-u', '--login', help='Safari Books Online login')
 parser.add_argument('-p', '--password', help='Safari Books Online password')
 parser.add_argument('safari_book_url',
-                    help='Safari book url, ex. https://www.safaribooksonline.com/library/view/software-build-systems/XXX/')
+                    help='Safari book url, ex. https://www.safaribooksonline.com/library/view/book-name/book-code/')
 
-args = parser.parse_args()
-url = args.safari_book_url
-email, password = get_credentials(args)
 
-cj = cookielib.CookieJar()
-br = mechanize.Browser()
-br.set_cookiejar(cj)
-br.open("https://www.safaribooksonline.com/accounts/login")
-br.select_form(nr=0)
-br.form['email'] = email
-br.form['password1'] = password
-response = br.submit()
-page = response.read()
-page_ascii_only = remove_non_ascii_chars(page)
-tree = html.fromstring(page_ascii_only)
-errorlist = tree.xpath('//*[@id="login-form"]/small/ul/li')
+def main():
+    args = parser.parse_args()
+    url = args.safari_book_url
 
-if errorlist.__len__() != 0:
-    print "Login has failed: " + errorlist[0].text
-    exit()
+    if not validators.url(url):
+        print "URL is invalid, please pass proper URL"
+        exit()
 
-page = br.open(url).read()
-page_ascii_only = remove_non_ascii_chars(page)
-tree = html.fromstring(page_ascii_only)
+    login, password = get_credentials(args)
 
-urllist = []
+    cj = cookielib.CookieJar()
+    br = mechanize.Browser()
+    br.set_cookiejar(cj)
+    br.open("https://www.safaribooksonline.com/accounts/login")
+    br.select_form(nr=0)
+    br.form['email'] = login
+    br.form['password1'] = password
+    response = br.submit()
+    page = response.read()
+    page_ascii_only = remove_non_ascii_chars(page)
+    tree = html.fromstring(page_ascii_only)
+    errorlist = tree.xpath('//*[@id="login-form"]/small/ul/li')
 
-for atag in tree.xpath('//*[@class="detail-toc"]//li/a'):
-    urllist.append(baseurl + atag.attrib['href'])
+    if errorlist.__len__() != 0:
+        print "Login has failed: " + errorlist[0].text
+        exit()
+    else:
+        print "Login successful"
 
-title = tree.xpath('//*[@class="title t-title"]/text()')[0]
-author = tree.xpath('//*[@class="author t-author"]//a/text()')[0]
-author_title = author + ' - ' + title
-filename = str(author_title) + '.pdf'
-bookpages = []
+    page = br.open(url).read()
+    page_ascii_only = remove_non_ascii_chars(page)
+    tree = html.fromstring(page_ascii_only)
 
-complete_book = ''
-print 'Downloading ' + author_title
-# fetch all the book pages
-for x in range(0, urllist.__len__()):
-     print "Downloading chapter nr " + str(x+1) + " out of " + str(urllist.__len__())
-     bookpage = br.open(urllist[x]).read()
-     bs = BeautifulSoup(remove_non_ascii_chars(bookpage), 'lxml')
-     content = bs.find("div", {"id": "sbo-rt-content"})
-     for img in content.findAll('img'):
-         img['src'] = img['src'].replace("/library/", baseurl + "library/")
-     complete_book += content.__str__()
+    urllist = []
 
-pdfkit.from_string(complete_book, filename, options=dict(encoding="utf-8", quiet=''))
-print("Done! Saved as '" + filename + "'")
+    for atag in tree.xpath('//*[@class="detail-toc"]//li/a'):
+        urllist.append(baseurl + atag.attrib['href'])
+
+    title = tree.xpath('//*[@class="title t-title"]/text()')[0]
+    author = tree.xpath('//*[@class="author t-author"]//a/text()')[0]
+    author_title = author + ' - ' + title
+    filename = str(author_title) + '.pdf'
+
+    complete_book = ''
+    print 'Downloading ' + author_title
+    # fetch all the book pages
+    for x in range(0, urllist.__len__()):
+        print "Downloading chapter " + str(x + 1) + " out of " + str(urllist.__len__())
+        bookpage = br.open(urllist[x]).read()
+        bs = BeautifulSoup(remove_non_ascii_chars(bookpage), 'lxml')
+        content = bs.find("div", {"id": "sbo-rt-content"})
+        for img in content.findAll('img'):
+            img['src'] = img['src'].replace("/library/", baseurl + "library/")
+        complete_book += content.__str__()
+
+    print "Generating pdf..."
+    pdfkit.from_string(complete_book, filename, options=dict(encoding="utf-8", quiet=''))
+    print("Done! Saved as '" + filename + "'")

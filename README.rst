@@ -6,7 +6,13 @@ This project fetches relevant data from Safari Books Online pages and generates 
 Installation
 ------------
 
-1. Install `wkhtmltopdf`_
+1. Install sbd with pip
+
+.. code-block:: bash
+
+	$ pip install sbd
+
+2. Install `wkhtmltopdf`_
 
 * Debian/Ubuntu:
 
@@ -18,11 +24,6 @@ Installation
 
 .. _wkhtmltopdf: http://wkhtmltopdf.org/
 
-2. Install sbd with pip
-
-.. code-block:: bash
-
-	$ pip install sbd
 
 Usage
 -----
@@ -34,5 +35,14 @@ You need to pass the credentials to your Safari Books online account followed by
 
 .. code-block:: bash
 
-	$ export SBD_LOGIN=''
-    $ export SBD_PASSWORD=''
+	$ export SBD_LOGIN='your_login'
+	$ export SBD_PASSWORD='your_password'
+	$ sbd https://www.safaribooksonline.com/library/view/reactive-web-applications/9781633430099/
+
+    or simply:
+
+.. code-block:: bash
+
+    $ sbd -u login -p password https://www.safaribooksonline.com/library/view/reactive-web-applications/9781633430099/
+
+

@@ -13,6 +13,11 @@ setup(name='sbd',
       install_requires=[
           'beautifulsoup4', 'lxml', 'mechanize', 'pdfkit'
       ],
+      entry_points={
+          'console_scripts': [
+              "sbd = sbd.__main__:main",
+          ],
+      },
       classifiers=[
           'Operating System :: Microsoft',
           'Operating System :: MacOS :: MacOS X',
