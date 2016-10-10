@@ -49,35 +49,41 @@ br.select_form(nr=0)
 br.form['email'] = email
 br.form['password1'] = password
 response = br.submit()
-print br.response.code
-page = br.open(url).read()
-
-# get rid of non ascii characters
+page = response.read()
 page_ascii_only = remove_non_ascii_chars(page)
-
 tree = html.fromstring(page_ascii_only)
-urllist = []
+errorlist = tree.xpath('//*[@id="login-form"]/small/ul/li')
 
-wtf = tree.xpath('//*[@id="toc"]')
+if errorlist.__len__() != 0:
+    print "Login has failed: " + errorlist[0].text
+    exit()
+
+page = br.open(url).read()
+page_ascii_only = remove_non_ascii_chars(page)
+tree = html.fromstring(page_ascii_only)
+
+urllist = []
 
 for atag in tree.xpath('//*[@class="detail-toc"]//li/a'):
     urllist.append(baseurl + atag.attrib['href'])
 
+title = tree.xpath('//*[@class="title t-title"]/text()')[0]
+author = tree.xpath('//*[@class="author t-author"]//a/text()')[0]
+author_title = author + ' - ' + title
+filename = str(author_title) + '.pdf'
 bookpages = []
 
 complete_book = ''
-
+print 'Downloading ' + author_title
 # fetch all the book pages
-# for x in range(0, urllist.__len__()):
-#     print "fetching page nr " + str(x) + "out of " + str(urllist.__len__())
-#     bookpage = br.open(urllist[x]).read()
-#     bookpage_clean = remove_non_ascii_chars(bookpage)
-#     # bookpage_content = html.fromstring(bookpage_clean)
-#     # purebook = bookpage_content.xpath('//*[@id="sbo-rt-content"]')
-#     bs = BeautifulSoup(bookpage_clean, 'lxml')
-#     content = bs.find("div", {"id": "sbo-rt-content"})
-#     for img in content.findAll('img'):
-#         img['src'] = img['src'].replace("/library/", baseurl + "library/")
-#     complete_book += content.__str__()
-#
-# pdfkit.from_string(complete_book, 'book.pdf', options=dict(encoding="utf-8"))
+for x in range(0, urllist.__len__()):
+     print "Downloading chapter nr " + str(x+1) + " out of " + str(urllist.__len__())
+     bookpage = br.open(urllist[x]).read()
+     bs = BeautifulSoup(remove_non_ascii_chars(bookpage), 'lxml')
+     content = bs.find("div", {"id": "sbo-rt-content"})
+     for img in content.findAll('img'):
+         img['src'] = img['src'].replace("/library/", baseurl + "library/")
+     complete_book += content.__str__()
+
+pdfkit.from_string(complete_book, filename, options=dict(encoding="utf-8", quiet=''))
+print("Done! Saved as '" + filename + "'")
