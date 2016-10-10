@@ -31,15 +31,15 @@ Usage
 
 	$ usage: sbd [-h] [-u LOGIN] [-p PASSWORD] safari_book_url
 
-You need to pass the credentials to your Safari Books online account followed by the URL of the book you wish to download. An alternative is to set your credentials in environmental variables:
-
-.. code-block:: bash
+You need to pass the credentials to your Safari Books online account followed by the URL of the book you wish to download.
 
 .. code-block:: bash
 
     $ sbd -u login -p password https://www.safaribooksonline.com/library/view/reactive-web-applications/9781633430099/
 
-or :
+An alternative is to set your credentials in environmental variables:
+
+.. code-block:: bash
 
 	$ export SBD_LOGIN='your_login'
 	$ export SBD_PASSWORD='your_password'
