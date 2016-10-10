@@ -35,14 +35,16 @@ You need to pass the credentials to your Safari Books online account followed by
 
 .. code-block:: bash
 
+.. code-block:: bash
+
+    $ sbd -u login -p password https://www.safaribooksonline.com/library/view/reactive-web-applications/9781633430099/
+
+or :
+
 	$ export SBD_LOGIN='your_login'
 	$ export SBD_PASSWORD='your_password'
 	$ sbd https://www.safaribooksonline.com/library/view/reactive-web-applications/9781633430099/
 
-    or simply:
 
-.. code-block:: bash
-
-    $ sbd -u login -p password https://www.safaribooksonline.com/library/view/reactive-web-applications/9781633430099/
 
 
