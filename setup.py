@@ -11,7 +11,7 @@ setup(name='sbd',
       url='https://github.com/Humblehound',
       download_url='https://github.com/Humblehound/sbd/tarball/0.1',
       install_requires=[
-          'beautifulsoup4', 'lxml', 'mechanize', 'pdfkit', 'validators'
+          'lxml', 'pdfkit', 'validators', 'robobrowser'
       ],
       entry_points={
           'console_scripts': [
@@ -24,7 +24,11 @@ setup(name='sbd',
           'Operating System :: Unix',
           'Operating System :: POSIX',
           'Programming Language :: Python',
-          'Programming Language :: Python :: 2.7'
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.3',
+          'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5'
       ],
       license=sbd.__license__,
       packages=find_packages(),

@@ -1,11 +1,9 @@
-from lxml import html
-from bs4 import BeautifulSoup
-import pdfkit
-import re
-import mechanicalsoup
 import argparse
 import os
+import pdfkit
+import re
 import validators
+from robobrowser import RoboBrowser
 
 
 def remove_non_ascii_chars(text):
@@ -22,7 +20,8 @@ def get_credentials(arguments):
         exit()
 
 
-baseurl = 'https://www.safaribooksonline.com/'
+base_url = 'https://www.safaribooksonline.com/'
+login_url = 'https://www.safaribooksonline.com/accounts/login'
 
 parser = argparse.ArgumentParser(
     description='A small program to download books from Safari Books Online for offline storage.')
@@ -42,47 +41,43 @@ def main():
 
     login, password = get_credentials(args)
 
-    br = mechanicalsoup.Browser()
-    login_page = br.get("https://www.safaribooksonline.com/accounts/login")
-    login_form = login_page.soup.select("form")[0]
-    login_form.input({"email": login, "password1": password})
-    response = br.submit(login_form, login_page.url)
-    page = response.read()
-    page_ascii_only = remove_non_ascii_chars(page)
-    tree = html.fromstring(page_ascii_only)
-    errorlist = tree.xpath('//*[@id="login-form"]/small/ul/li')
+    br = RoboBrowser(parser='lxml')
+    br.open(login_url)
+    login_form = br.get_form()
+    login_form['email'].value = login
+    login_form['password1'].value = password
+    br.session.headers['Referer'] = login_url
+    br.submit_form(login_form)
 
-    if errorlist.__len__() != 0:
-        print("Login has failed: " + errorlist[0].text)
+    error_list = br.parsed.find_all("ul", class_='errorlist')
+
+    if error_list.__len__() != 0:
+        print("Login has failed: " + error_list[0].contents[0].text)
         exit()
     else:
         print("Login successful")
 
-    page = br.open(url).read()
-    page_ascii_only = remove_non_ascii_chars(page)
-    tree = html.fromstring(page_ascii_only)
+    br.open(url)
+    url_list = []
 
-    urllist = []
+    for chapter in br.parsed.find_all("a", class_='t-chapter'):
+        url_list.append(base_url + chapter['href'])
 
-    for atag in tree.xpath('//*[@class="detail-toc"]//li/a'):
-        urllist.append(baseurl + atag.attrib['href'])
-
-    title = tree.xpath('//*[@class="title t-title"]/text()')[0]
-    author = tree.xpath('//*[@class="author t-author"]//a/text()')[0]
+    author = br.parsed.find('meta', {"property": 'og:book:author'})['content']
+    title = br.parsed.find('meta', {"itemprop": 'name'})['content']
     author_title = author + ' - ' + title
     filename = str(author_title) + '.pdf'
 
     complete_book = ''
     print('Downloading ' + author_title)
     # fetch all the book pages
-    for x in range(0, urllist.__len__()):
-        print("Downloading chapter " + str(x + 1) + " out of " + str(urllist.__len__()))
-        bookpage = br.open(urllist[x]).read()
-        bs = BeautifulSoup(remove_non_ascii_chars(bookpage), 'lxml')
-        content = bs.find("div", {"id": "sbo-rt-content"})
+    for x in range(0, url_list.__len__()):
+        print("Downloading chapter " + str(x + 1) + " out of " + str(url_list.__len__()))
+        br.open(url_list[x])
+        content = br.parsed.find("div", {"id": "sbo-rt-content"})
         for img in content.findAll('img'):
-            img['src'] = img['src'].replace("/library/", baseurl + "library/")
-        complete_book += content.__str__()
+            img['src'] = img['src'].replace("/library/", base_url + "library/")
+        complete_book += remove_non_ascii_chars(content.__str__())
 
     print("Generating pdf...")
     pdfkit.from_string(complete_book, filename, options=dict(encoding="utf-8", quiet=''))
