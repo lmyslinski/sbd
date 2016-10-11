@@ -1,4 +1,4 @@
-from sbd import main
+import sbd
 
 if __name__ == "__main__":
-    main()
+    sbd.main()
