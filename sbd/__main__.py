@@ -1,4 +1,5 @@
-import sbd
+from __future__ import absolute_import
+from .sbd import main
 
 if __name__ == "__main__":
-    sbd.main()
+    main()

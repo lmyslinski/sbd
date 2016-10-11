@@ -13,11 +13,12 @@ def remove_non_ascii_chars(text):
 def get_credentials(arguments):
     if arguments.login is not None and arguments.password is not None:
         return arguments.login, arguments.password
-    elif os.environ["SBD_LOGIN"] and os.environ["SBD_PASSWORD"]:
-        return os.environ["SBD_LOGIN"], os.environ["SBD_PASSWORD"]
     else:
-        print("You must provide Safari Books Online credentials")
-        exit()
+        try:
+            return os.environ["SBD_LOGIN"], os.environ["SBD_PASSWORD"]
+        except KeyError:
+            print("You must provide Safari Books Online credentials")
+            exit()
 
 
 base_url = 'https://www.safaribooksonline.com/'
